@@ -1,0 +1,54 @@
+semaphore general_mutex = 1;
+semaphore readers_mutex = 1;
+semaphore write_mutex = 1;
+
+int readers_count = 0;
+
+wait(s){
+	while(s<=0){
+	;
+	}
+	s--;
+}
+
+signal(s){
+	s++;
+}
+
+void reader(){
+	while(true){
+		wait(general_mutex);
+		wait(readers_mutex);
+		readers_count++;
+		if(readers_count > 0)
+			wait(write_mutex);
+		signal(readers_mutex);
+		signal(general_mutex);
+
+		//Entering C.S
+		//...Reading....
+		//Exiting C.S
+
+		wait(readers_mutex);
+		readers_count--;
+		if(readers_count == 0)
+			signal(write_mutex);
+		signal(readers_mutex);
+
+	}
+}
+
+
+void writer(){
+	while(true){
+		wait(general_mutex);
+		wait(write_mutex);
+
+		//Entering C.S
+		//...Writing...
+		//Exiting C.S
+
+		signal(write_mutex);
+		signal(general_mutex);
+	}
+}
